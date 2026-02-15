@@ -41,7 +41,8 @@ async def run_agent(db: Session, user_id: str, session_id: int, user_message: st
             if key and value:
                 crud.upsert_memory_fact(db, user_id=user_id, key=key, value=value)
 
-    do_web = use_web and (mode == "FACTUAL")
+    do_web = bool(use_web) and mode == "FACTUAL"
+
 
   
 
@@ -90,8 +91,9 @@ USER QUESTION:
 
     draft_answer = await generate_answer(draft_prompt)
 
-    verified = False
+    verified = None  # means "no badge"
     final_answer = draft_answer
+
 
     
 
@@ -100,9 +102,10 @@ USER QUESTION:
         verified, final_answer = await verify_answer(draft_answer, search_context)
         if not verified:
             final_answer = "⚠️ Couldn’t fully verify with multiple sources.\n\n" + final_answer
-    else:
-        # Not a factual query, so we don't label as verified
-        verified = False
+        else:
+    # No verification attempted → no badge
+            verified = None
+
 
     steps.append("📩 Done")
     return final_answer, sources, verified, steps

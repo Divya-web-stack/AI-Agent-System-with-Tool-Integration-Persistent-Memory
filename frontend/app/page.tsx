@@ -1,6 +1,9 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
+
 
 type Source = { title: string; url: string };
 type ChatResponse = {
@@ -226,18 +229,19 @@ export default function Home() {
             {sessions.map((s) => (
   <div
     key={s.id}
-    className={`w-full rounded border px-3 py-2 text-sm flex items-center justify-between gap-2 ${
-      sessionId === s.id
-        ? "bg-zinc-800 border-zinc-600"
-        : "bg-zinc-900 border-zinc-700 hover:bg-zinc-800"
-    }`}
+    className={`w-full text-left rounded-xl border px-3 py-3 text-sm transition ${
+  sessionId === s.id
+    ? "bg-zinc-900 border-zinc-700"
+    : "bg-zinc-950 border-zinc-800 hover:bg-zinc-900"
+}`}
+
   >
     <div className="flex-1 cursor-pointer" onClick={() => loadSession(s.id)}>
       <div className="flex items-center gap-2">
         <span>💬</span>
         <div className="font-medium truncate">{s.title || `Chat ${s.id}`}</div>
       </div>
-      <div className="text-xs opacity-70">Session #{s.id}</div>
+    <div className="text-xs text-zinc-500">Session #{s.id}</div>
     </div>
 
     <button
@@ -266,7 +270,7 @@ export default function Home() {
           <header className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
           <div>
             <h1 className="text-2xl font-semibold">Live AI Assistant</h1>
-            <p className="text-sm opacity-70">FastAPI + Groq + Web Search + SQLite Memory</p>
+            <p className="text-sm opacity-70">Smarter Than a Search Bar</p>
           </div>
 
           <div className="flex flex-wrap items-center gap-3">
@@ -294,24 +298,30 @@ export default function Home() {
           </div>
         </header>
 
-        <section className="mt-6 space-y-3 rounded border p-4">
+        <section className="mt-6 space-y-4 rounded-2xl border border-zinc-800 bg-black/30 p-5 backdrop-blur">
           {messages.map((m, idx) => (
             <div key={idx} className={`flex ${m.role === "user" ? "justify-end" : "justify-start"}`}>
 <div
-  className={`max-w-[85%] rounded-lg border p-3 text-gray-900 ${
-    m.role === "user" ? "bg-white" : "bg-gray-50"
+  className={`max-w-[85%] rounded-2xl border px-4 py-3 shadow-sm ${
+    m.role === "user"
+      ? "bg-zinc-900 border-zinc-700 text-zinc-100"
+      : "bg-zinc-950 border-zinc-800 text-zinc-100"
   }`}
 >
+
                 <div className="flex items-center justify-between gap-3">
-                  <div className="text-xs opacity-70">
+                    <div className="text-xs text-zinc-400">
                     {m.role === "user" ? "You" : "Assistant"}
                   </div>
 
                   {m.role === "assistant" && typeof m.verified !== "undefined" && (
                     <span
-                      className={`text-xs px-2 py-0.5 rounded border ${
-                        m.verified ? "opacity-90" : "opacity-70"
-                      }`}
+                      className={`text-xs px-2 py-0.5 rounded-full border ${
+                          m.verified
+                            ? "border-emerald-600/40 bg-emerald-600/10 text-emerald-300"
+                            : "border-amber-600/40 bg-amber-600/10 text-amber-300"
+                        }`}
+
                       title={m.verified ? "Verified using multiple sources" : "Not fully verified"}
                     >
                       {m.verified ? "Verified ✅" : "Unverified ⚠️"}
@@ -319,7 +329,11 @@ export default function Home() {
                   )}
                 </div>
 
-                <pre className="mt-2 whitespace-pre-wrap text-sm text-gray-900">{m.content}</pre>
+                <div className="mt-2 prose prose-sm max-w-none prose-pre:bg-zinc-900 prose-pre:text-zinc-100 prose-pre:border prose-pre:border-zinc-700">
+                  <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                    {m.content}
+                  </ReactMarkdown>
+                </div>
 
                 {m.role === "assistant" && m.sources && m.sources.length > 0 && (
                   <div className="mt-3 border-t pt-2">
